@@ -18,5 +18,5 @@ using System.Runtime.InteropServices;
 #endif
 [assembly: AssemblyCompany("Danila Korablin")]
 [assembly: AssemblyProduct("Web Browser Windows Plugin")]
-[assembly: AssemblyCopyright("Copyright © Danila Korablin 2009-2016")]
+[assembly: AssemblyCopyright("Copyright © Danila Korablin 2009-2024")]
 #endif
