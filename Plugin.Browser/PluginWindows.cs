@@ -38,10 +38,10 @@ namespace Plugin.Browser
 		public IWindow GetPluginControl(String typeName, Object args)
 			=> this.CreateWindow(typeName, false, args);
 
-		/// <summary>Поискать узлы HTML в структуре DOM отдаваемой WebBrowser'ом</summary>
-		/// <param name="body">Корневой элемент DOM</param>
-		/// <param name="xpath">XPath к элементам относительно корневого элемента в подобии XPath</param>
-		/// <returns>Массив найденных элементов в DOM структуре соответствующих подобию XPath</returns>
+		/// <summary>Search for HTML nodes in the DOM structure returned by WebBrowser</summary>
+		/// <param name="body">Root DOM element</param>
+		/// <param name="xpath">XPath to elements relative to the root element in XPath similarity</param>
+		/// <returns>Array of elements found in the DOM structure matching the XPath similarity</returns>
 		public IEnumerable<HtmlElement> FindNodes(HtmlElement body, String xpath)
 			=> new XPathHtml(body, xpath);
 

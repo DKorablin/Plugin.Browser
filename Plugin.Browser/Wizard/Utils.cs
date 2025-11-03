@@ -7,21 +7,22 @@ namespace Plugin.Browser
 {
 	internal static class Utils
 	{
-		#region Fields
 		private const Char NodeSeparator = '/';
-		internal static Color[] Colors = { Color.Black, Color.Gray, Color.Maroon, Color.Olive, Color.Green, Color.Teal, Color.Navy, Color.Purple, Color.White, Color.Silver, Color.Red, Color.Yellow, Color.Lime, Color.Aqua, Color.Blue, Color.Fuchsia };
-		private static String[] ValidAttributes = new String[] { "className", "id", "style", "width", "height", "innerText", };
-		private static String OldStyleAttribute = Guid.NewGuid().ToString("N");
-		#endregion Fields
 
-		/// <summary>Получить значение элемента</summary>
-		/// <param name="element">Элемент в котором искать значение</param>
-		/// <param name="property">Свойство значение которого необходимо вернуть</param>
+		internal static readonly Color[] Colors = { Color.Black, Color.Gray, Color.Maroon, Color.Olive, Color.Green, Color.Teal, Color.Navy, Color.Purple, Color.White, Color.Silver, Color.Red, Color.Yellow, Color.Lime, Color.Aqua, Color.Blue, Color.Fuchsia };
+
+		private static String[] ValidAttributes = new String[] { "className", "id", "style", "width", "height", "innerText", };
+
+		private static String OldStyleAttribute = Guid.NewGuid().ToString("N");
+
+		/// <summary>Get the value of an element</summary>
+		/// <param name="element">The element in which to search for the value</param>
+		/// <param name="property">The property whose value needs to be returned</param>
 		/// <remarks>
-		/// 1) Поиск производится через атрибуты
-		/// 2) Поиск производится через рефлексию к __ComObject DomElement
+		/// 1) The search is performed through attributes
+		/// 2) The search is performed through reflection on __ComObject DomElement
 		/// </remarks>
-		/// <returns>Значение свойства</returns>
+		/// <returns>The property value</returns>
 		public static String GetElementPropertyValue(HtmlElement element, String property)
 		{
 			_ = element ?? throw new ArgumentNullException(nameof(element));
@@ -30,7 +31,7 @@ namespace Plugin.Browser
 
 			String result = element.GetAttribute(property);
 			if(String.IsNullOrEmpty(result))
-			{//В MSIE 9 получить свойство через DomElement не получается. Т.к. там он ComObject.
+			{//In MSIE 9, you can't get a property via DomElement because it's a ComObject.
 				var objProperty = element.DomElement.GetType().GetProperty(property);
 				if(objProperty != null)
 				{
@@ -76,10 +77,10 @@ namespace Plugin.Browser
 		public static void RemoveHilight(HtmlElement element)
 			=> element.Style = element.GetAttribute(Utils.OldStyleAttribute);
 
-		/// <summary>Получить валидные значения атрибутов элемента</summary>
-		/// <remarks>Сначала пробегаюсь по списку атрибутов, а затем, если в массиве валидных атрибутов ещё что-то осталось, то через рефлексию по пропертям</remarks>
-		/// <param name="element">Элемент</param>
-		/// <returns>Список значений и атрибутов</returns>
+		/// <summary>Get valid attribute values ​​for an element</summary>
+		/// <remarks>First, I iterate over the list of attributes, and then, if there are any remaining valid attributes in the array, I use property reflection.</remarks>
+		/// <param name="element">Element</param>
+		/// <returns>List of values ​​and attributes</returns>
 		public static IEnumerable<KeyValuePair<String, String>> GetValidHtmlAttributes(HtmlElement element)
 		{
 			_ = element ?? throw new ArgumentNullException(nameof(element));
@@ -101,7 +102,7 @@ namespace Plugin.Browser
 			}
 
 			if(validAttributes.Count > 0)
-			{//А теперь через рефлексию к элементу
+			{//And now through reflection to the element
 				var properties = element.GetType().GetProperties();
 				foreach(var property in properties)
 					for(Int32 index = validAttributes.Count - 1; index >= 0; index--)
@@ -120,7 +121,7 @@ namespace Plugin.Browser
 					}
 			}
 			if(validAttributes.Count > 0)
-			{//А теперь через рефлексию к DomElement
+			{//And now through reflection to DomElement
 				var properties = element.DomElement.GetType().GetProperties();
 				foreach(var property in properties)
 					for(Int32 index = validAttributes.Count - 1; index >= 0; index--)

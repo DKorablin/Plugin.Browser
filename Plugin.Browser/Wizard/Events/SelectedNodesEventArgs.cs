@@ -4,15 +4,15 @@ using SAL.Flatbed;
 
 namespace Plugin.Browser
 {
-	/// <summary>Аргументы получения списка наименование и XPath для поиска узлов в HTML'е через Trident</summary>
+	/// <summary>Arguments for retrieving a list of names and XPaths for searching HTML nodes using Trident</summary>
 	public class SelectedNodesEventArgs : DataEventArgs
 	{
 		private readonly KeyValuePair<String, String>[] _nodes;
 
-		/// <summary>Количество ключей в массиве</summary>
+		/// <summary>Number of keys in the array</summary>
 		public override Int32 Count => this._nodes.Length;
 
-		/// <summary>Массив наименований XPath узлов в HTML'е</summary>
+		/// <summary>Array of XPath names of HTML nodes</summary>
 		public override IEnumerable<String> Keys
 		{
 			get
@@ -25,10 +25,10 @@ namespace Plugin.Browser
 		internal SelectedNodesEventArgs(KeyValuePair<String, String>[] nodes)
 			=> this._nodes = nodes;
 
-		/// <summary>Получить XPath узла по ключу узла</summary>
-		/// <typeparam name="T">Тип получаемых данных (XPath в строковой форме)</typeparam>
-		/// <param name="key">Ключ получения XPath</param>
-		/// <returns>XPath до узла</returns>
+		/// <summary>Get the XPath of a node by its key</summary>
+		/// <typeparam name="T">Type of data to retrieve (XPath in string form)</typeparam>
+		/// <param name="key">Key to retrieve XPath</param>
+		/// <returns>XPath to node</returns>
 		public override T GetData<T>(String key)
 		{
 			if(String.IsNullOrEmpty(key))

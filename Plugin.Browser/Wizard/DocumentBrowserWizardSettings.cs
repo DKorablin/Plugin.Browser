@@ -5,13 +5,13 @@ namespace Plugin.Browser
 {
 	public class DocumentBrowserWizardSettings
 	{
-		/// <summary>Плагин, вызывающий событие</summary>
+		/// <summary>The plugin that triggers the event</summary>
 		public String CallerPluginId { get; set; }
 
-		/// <summary>Массив узлов, где ключ - константа, а в значение будет XPath для парсинга иерархии нодов в Trident'е</summary>
+		/// <summary>An array of nodes, where the key is a constant and the value is the XPath for parsing the node hierarchy in Trident</summary>
 		public Dictionary<String, String> Nodes { get; set; }
 
-		/// <summary>Ссылка на страницу, на которой осуществить парсинг массива узлов</summary>
+		/// <summary>A link to the page where to parse the array of nodes</summary>
 		public String NavigateUrl { get; set; }
 	}
 }

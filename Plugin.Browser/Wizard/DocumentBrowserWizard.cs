@@ -11,13 +11,14 @@ namespace Plugin.Browser
 {
 	public partial class DocumentBrowserWizard : UserControl, IPluginSettings<DocumentBrowserWizardSettings>
 	{
-		#region Fields
 		private IPluginDescription _callerPlugin;
+
 		private DocumentBrowserWizardSettings _settings;
+
 		private Boolean _cancelNavigation = false;
+
 		//private Boolean _eventsAttached = false;
-		#endregion Fields
-		#region Properties
+
 		public String NavigateUrl
 		{
 			get => txtNavigate.Text;
@@ -39,7 +40,7 @@ namespace Plugin.Browser
 		protected PluginWindows Plugin => (PluginWindows)this.Window.Plugin;
 		protected IWindow Window => (IWindow)base.Parent;
 
-		/// <summary>Плагин, вызывающий событие</summary>
+		/// <summary>Plugin that triggers the event</summary>
 		private IPluginDescription CallerPlugin
 		{
 			get
@@ -63,14 +64,12 @@ namespace Plugin.Browser
 			set => this._callerPlugin = value;
 		}
 
-		#endregion Properties
-
-		/// <summary>Сообщение, которое будет вызвано по завершению компиляции</summary>
+		/// <summary>Message that will be called upon completion of compilation</summary>
 		public event EventHandler<DataEventArgs> SaveNodesEvent;
 
 		public DocumentBrowserWizard()
 		{
-			InitializeComponent();
+			this.InitializeComponent();
 			splitAdvancedEdit.Panel2Collapsed = true;
 			splitBrowser.Panel2Collapsed = true;
 			tsNodes.Visible = false;
@@ -80,8 +79,8 @@ namespace Plugin.Browser
 		{
 			this.Window.Caption = "Browser";
 			this.Window.SetTabPicture(Resources.iconBrowser);
-			this.Window.Shown += new EventHandler(Window_Shown);
-			this.Window.Closed += new EventHandler(Window_Closed);
+			this.Window.Shown += new EventHandler(this.Window_Shown);
+			this.Window.Closed += new EventHandler(this.Window_Closed);
 
 			this.NavigateUrl = this.Settings.NavigateUrl;
 
@@ -139,9 +138,9 @@ namespace Plugin.Browser
 				}
 		}
 
-		/// <summary>Установить подсказку для расширенного элемента управления</summary>
-		/// <param name="element">Первый найденный элемент в коллекции</param>
-		/// <param name="totalCount">Общее количество найденных элементов соответствующих критерию поиска</param>
+		/// <summary>Set a tooltip for an expanded control</summary>
+		/// <param name="element">The first element found in the collection</param>
+		/// <param name="totalCount">The total number of elements found that match the search criteria</param>
 		private void SetAdvancedPath(HtmlElement element, Int32 totalCount)
 		{
 			lvAdvancedNodes.Items.Clear();
@@ -311,8 +310,8 @@ namespace Plugin.Browser
 
 			//if(!this._eventsAttached)
 			//{
-				browser.Document.Body.MouseMove += new HtmlElementEventHandler(Body_MouseMove);
-				browser.Document.Body.MouseDown += new HtmlElementEventHandler(Body_MouseDown);
+				browser.Document.Body.MouseMove += new HtmlElementEventHandler(this.Body_MouseMove);
+				browser.Document.Body.MouseDown += new HtmlElementEventHandler(this.Body_MouseDown);
 				//this._eventsAttached = true;
 			//}
 
@@ -325,10 +324,10 @@ namespace Plugin.Browser
 				}
 		}
 
-		private void browser_CanGoForwardChanged(Object sender, System.EventArgs e)
+		private void browser_CanGoForwardChanged(Object sender, EventArgs e)
 			=> bnFfwd.Enabled = browser.CanGoBack;
 
-		private void browser_CanGoBackChanged(Object sender, System.EventArgs e)
+		private void browser_CanGoBackChanged(Object sender, EventArgs e)
 			=> bnBack.Enabled = browser.CanGoForward;
 
 		void Body_MouseDown(Object sender, HtmlElementEventArgs e)

@@ -6,7 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0E6F85B1-11CE-484D-871D-C2A7BAFE527A}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		Plugin.Browser.dll.nuspec = Plugin.Browser.dll.nuspec
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		Directory.Packages.props = Directory.Packages.props
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -17,7 +19,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{
 		.github\workflows\test.yml = .github\workflows\test.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Browser35", "Plugin.Browser\Plugin.Browser35.csproj", "{C0299128-8AF8-426F-ACBB-C17B93C239BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Browser", "Plugin.Browser\Plugin.Browser.csproj", "{46618486-8971-23AE-8CC6-2682661F5664}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		.github\scripts\Build-ReleasePackage.ps1 = .github\scripts\Build-ReleasePackage.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,16 +32,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C0299128-8AF8-426F-ACBB-C17B93C239BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C0299128-8AF8-426F-ACBB-C17B93C239BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C0299128-8AF8-426F-ACBB-C17B93C239BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C0299128-8AF8-426F-ACBB-C17B93C239BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46618486-8971-23AE-8CC6-2682661F5664}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46618486-8971-23AE-8CC6-2682661F5664}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46618486-8971-23AE-8CC6-2682661F5664}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46618486-8971-23AE-8CC6-2682661F5664}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{66600C71-3894-407C-9ACB-7ED3510D24DD} = {0E6F85B1-11CE-484D-871D-C2A7BAFE527A}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {0E6F85B1-11CE-484D-871D-C2A7BAFE527A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9A96D587-391E-46EF-A9EB-81DB01C74A42}

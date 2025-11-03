@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace Plugin.Browser
 {
-	/// <summary>Класс разбора HTML и применение к структуре узлов Trident'а, самописный XPath</summary>
+	/// <summary>HTML parsing class and application to Trident node structure, custom XPath</summary>
 	public class XPathHtml : IEnumerable<HtmlElement>
 	{
 		private struct XNode
@@ -52,9 +52,9 @@ namespace Plugin.Browser
 						yield return child;
 		}
 
-		/// <summary>Поиск узла в дереве</summary>
-		/// <param name="index">Индекс позиции в ХПути</param>
-		/// <param name="root">Стартовый узел, с которого надо начать</param>
+		/// <summary>Finding a node in a tree</summary>
+		/// <param name="index">The index of the position in the XPath</param>
+		/// <param name="root">The starting node to begin with</param>
 		/// <returns></returns>
 		private static IEnumerable<HtmlElement> FindNodes(String path, HtmlElement root)
 		{
@@ -64,7 +64,7 @@ namespace Plugin.Browser
 
 			XNode node = XPathHtml.ParsePath(path);
 
-			if(node.Index.HasValue)//Поиск элемента по индексу
+			if(node.Index.HasValue)//Finding an element by index
 			{
 				Int32 index = node.Index.Value;
 				if(index < 0)
@@ -73,7 +73,7 @@ namespace Plugin.Browser
 				if(root.Children.Count > index
 				&& root.Children[index].TagName.Equals(node.Name, StringComparison.OrdinalIgnoreCase))
 					yield return root.Children[index];
-			} else if(node.Attribute.HasValue)//Поиск элемента по наименованию атрибута
+			} else if(node.Attribute.HasValue)//Search for an element by attribute name
 			{
 				foreach(HtmlElement element in root.Children)
 					if(element.TagName.Equals(node.Name, StringComparison.OrdinalIgnoreCase)
@@ -93,7 +93,7 @@ namespace Plugin.Browser
 			Int32 endIndex = path.IndexOf(XPathHtml.PathArgumentEnd);
 
 			if(startIndex > -1 && endIndex > -1)
-			{//Найдены условия для поиска узла
+			{//Conditions for searching for a node have been found
 				result.Name = path.Substring(0, startIndex);
 
 				String attribute = path.Substring(startIndex + 1, endIndex - startIndex - 1);
