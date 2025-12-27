@@ -5,4 +5,3 @@ using System.Runtime.InteropServices;
 [assembly: System.CLSCompliant(true)]
 
 [assembly: AssemblyDescription("Using embedded Microsoft © Internet Explorer © browser for Windows Forms application")]
-[assembly: AssemblyCopyright("Copyright © Danila Korablin 2009-2025")]
