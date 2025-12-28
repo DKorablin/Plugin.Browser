@@ -37,11 +37,12 @@
 			this.bnNavigate = new System.Windows.Forms.Button();
 			this.txtNavigate = new System.Windows.Forms.TextBox();
 			this.ilImages = new System.Windows.Forms.ImageList(this.components);
-			this.browser = new System.Windows.Forms.WebBrowser();
+			this.webView = new Microsoft.Web.WebView2.WinForms.WebView2();
 			this.ttNodes = new System.Windows.Forms.ToolTip(this.components);
 			pnlHead = new System.Windows.Forms.Panel();
 			label1 = new System.Windows.Forms.Label();
 			pnlHead.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.webView)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// pnlHead
@@ -120,31 +121,33 @@
 			this.ilImages.TransparentColor = System.Drawing.Color.Magenta;
 			this.ilImages.Images.SetKeyName(0, "iconNavigate.bmp");
 			// 
-			// browser
+			// webView
 			// 
-			this.browser.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.browser.Location = new System.Drawing.Point(0, 35);
-			this.browser.MinimumSize = new System.Drawing.Size(20, 20);
-			this.browser.Name = "browser";
-			this.browser.ScriptErrorsSuppressed = true;
-			this.browser.Size = new System.Drawing.Size(526, 311);
-			this.browser.TabIndex = 1;
-			this.browser.CanGoBackChanged += new System.EventHandler(this.browser_CanGoBackChanged);
-			this.browser.CanGoForwardChanged += new System.EventHandler(this.browser_CanGoForwardChanged);
-			this.browser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.browser_DocumentCompleted);
-			this.browser.Navigating += new System.Windows.Forms.WebBrowserNavigatingEventHandler(this.browser_Navigating);
+			this.webView.AllowExternalDrop = true;
+			this.webView.CreationProperties = null;
+			this.webView.DefaultBackgroundColor = System.Drawing.Color.White;
+			this.webView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.webView.Location = new System.Drawing.Point(0, 35);
+			this.webView.Name = "webView";
+			this.webView.Size = new System.Drawing.Size(526, 311);
+			this.webView.TabIndex = 1;
+			this.webView.ZoomFactor = 1D;
+			this.webView.CoreWebView2InitializationCompleted += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs>(this.WebView_CoreWebView2InitializationCompleted);
+			this.webView.NavigationCompleted += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs>(this.WebView_NavigationCompleted);
+			this.webView.NavigationStarting += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs>(this.WebView_NavigationStarting);
 			// 
 			// DocumentBrowser
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.browser);
+			this.Controls.Add(this.webView);
 			this.Controls.Add(pnlHead);
 			this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
 			this.Name = "DocumentBrowser";
 			this.Size = new System.Drawing.Size(526, 346);
 			pnlHead.ResumeLayout(false);
 			pnlHead.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.webView)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -152,7 +155,7 @@
 		#endregion
 
 		private System.Windows.Forms.TextBox txtNavigate;
-		private System.Windows.Forms.WebBrowser browser;
+		private Microsoft.Web.WebView2.WinForms.WebView2 webView;
 		private System.Windows.Forms.Button bnNavigate;
 		private System.Windows.Forms.ImageList ilImages;
 		private System.Windows.Forms.Button bnFfwd;

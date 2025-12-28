@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Forms;
+using Microsoft.Web.WebView2.Core;
 using Plugin.Browser.Properties;
 using SAL.Flatbed;
 using SAL.Windows;
+using System.Linq;
 
 namespace Plugin.Browser
 {
@@ -17,7 +19,7 @@ namespace Plugin.Browser
 
 		private Boolean _cancelNavigation = false;
 
-		//private Boolean _eventsAttached = false;
+		private String _currentRightClickedElementPath;
 
 		public String NavigateUrl
 		{
@@ -75,7 +77,7 @@ namespace Plugin.Browser
 			tsNodes.Visible = false;
 		}
 
-		protected override void OnCreateControl()
+		protected override async void OnCreateControl()
 		{
 			this.Window.Caption = "Browser";
 			this.Window.SetTabPicture(Resources.iconBrowser);
@@ -88,7 +90,7 @@ namespace Plugin.Browser
 			tsNodes.Visible = true;
 
 			Int32 colorIndex = 1;
-			foreach(KeyValuePair<String,String> node in this.Settings.Nodes)
+			foreach(KeyValuePair<String, String> node in this.Settings.Nodes)
 			{
 				RadioButton rbNode = new RadioButton()
 				{
@@ -106,6 +108,7 @@ namespace Plugin.Browser
 			}
 
 			base.OnCreateControl();
+			await webView.EnsureCoreWebView2Async();
 		}
 
 		private void Window_Shown(Object sender, EventArgs e)
@@ -117,49 +120,47 @@ namespace Plugin.Browser
 		private void Window_Closed(Object sender, EventArgs e)
 			=> this.Settings.NavigateUrl = this.NavigateUrl;
 
-		private void SetButtonPath(String path)
+		private async void SetButtonPath(String path)
 		{
 			foreach(RadioButton ctrl in flowNodes.Controls)
 				if(ctrl.Checked)
 				{
 					if(ctrl.Tag != null)
 					{
-						foreach(HtmlElement oldElement in new XPathHtml(browser.Document.Body, (String)ctrl.Tag))
-							Utils.RemoveHilight(oldElement);
+						await WebView2Utils.RemoveHighlightByXPath(webView, (String)ctrl.Tag);
 					}
-					foreach(HtmlElement element in new XPathHtml(browser.Document.Body, path))
-						if(element != null)
-						{
-							Utils.HilightElement(element, ctrl.ForeColor);
-							ctrl.Tag = path;
-							ttNodes.SetToolTip(ctrl, path);
-						}
+
+					await WebView2Utils.HighlightElementByXPath(webView, path, ctrl.ForeColor);
+					ctrl.Tag = path;
+					ttNodes.SetToolTip(ctrl, path);
 					break;
 				}
 		}
 
 		/// <summary>Set a tooltip for an expanded control</summary>
-		/// <param name="element">The first element found in the collection</param>
+		/// <param name="elementPath">The first element found in the collection</param>
 		/// <param name="totalCount">The total number of elements found that match the search criteria</param>
-		private void SetAdvancedPath(HtmlElement element, Int32 totalCount)
+		private async void SetAdvancedPath(String elementPath, Int32 totalCount)
 		{
 			lvAdvancedNodes.Items.Clear();
 			txtAdvancedPath.AutoCompleteCustomSource.Clear();
-			if(element != null)
+			if(elementPath != null)
 			{
 				if(totalCount == 1)
 				{
 					List<ListViewItem> itemList = new List<ListViewItem>();
-					foreach(KeyValuePair<String, String> attribute in Utils.GetValidHtmlAttributes(element))
+					var attributes = await WebView2Utils.GetElementAttributes(webView, elementPath);
+					foreach(KeyValuePair<String, String> attribute in attributes)
 						itemList.Add(new ListViewItem(new String[] { attribute.Key, attribute.Value == null ? "<null>" : attribute.Value, }));
 					lvAdvancedNodes.Items.AddRange(itemList.ToArray());
 					lvAdvancedNodes.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
 
 					List<String> itemAutoComplete = new List<String>();
-					foreach(HtmlElement children in element.Children)
-						itemAutoComplete.Add(Utils.GetElementPath(children));
+					var childrenPaths = await WebView2Utils.GetElementChildrenPaths(webView, elementPath);
+					foreach(String childPath in childrenPaths)
+						itemAutoComplete.Add(childPath);
 					txtAdvancedPath.AutoCompleteCustomSource.AddRange(itemAutoComplete.ToArray());
-				}else
+				} else
 				{
 					lvAdvancedNodes.Items.Add(new ListViewItem(new String[] { "Count", totalCount.ToString(), }));
 					lvAdvancedNodes.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
@@ -192,64 +193,43 @@ namespace Plugin.Browser
 			switch(e.Button)
 			{
 			case MouseButtons.Left:
-				String path=(String)button.Tag;
-				if(path == null)
-					tsslNodePath.Text = String.Empty;
-				else
-				{
-					tsslNodePath.Text = path;
-					//HtmlElement element = Utils.FindElement(tsslNodePath.Text, browser.Document.Body);
-				}
+				String path = (String)button.Tag;
+				tsslNodePath.Text = path ?? String.Empty;
 				break;
 			}
 		}
 
 		private void cmsAdvancedTemplate_ItemClicked(Object sender, ToolStripItemClickedEventArgs e)
 		{
-			HtmlElement element = (HtmlElement)cmsAdvancedTemplate.Tag;
 			if(e.ClickedItem == tsmiAdvancedEdit)
 			{
 				splitAdvancedEdit.Panel2Collapsed = false;
-				txtAdvancedPath.Text = Utils.GetElementPath(element);
-				this.SetAdvancedPath(element, 1);
+				txtAdvancedPath.Text = _currentRightClickedElementPath;
+				this.SetAdvancedPath(_currentRightClickedElementPath, 1);
 			}
 		}
 
 		private void cmsAdvancedTemplate_Closed(Object sender, ToolStripDropDownClosedEventArgs e)
 		{
-			browser.IsWebBrowserContextMenuEnabled = true;
-			cmsAdvancedTemplate.Tag = null;
+			webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+			_currentRightClickedElementPath = null;
 		}
 
-		private void txtAdvancedPath_TextChanged(Object sender, EventArgs e)
+		private async void txtAdvancedPath_TextChanged(Object sender, EventArgs e)
 		{
 			if(txtAdvancedPath.SelectionLength == txtAdvancedPath.Text.Length)
 				return;
 
-			HtmlElement first = null;
-			Int32 count = 0;
-			XPathHtml xpath = new XPathHtml(browser.Document.Body, txtAdvancedPath.Text);
-			foreach(HtmlElement element in xpath)
-			{
-				if(first == null)
-					first = element;
-				count++;
-			}
+			var result = await WebView2Utils.GetXPathResult(webView, txtAdvancedPath.Text);
 
 			String oldPath = txtAdvancedPath.Tag as String;
-			String newPath;
-			if(first == null)
-				newPath = null;
-			/*else if(count == 1)//Затирает кастомный путь
-				newPath = Utils.GetElementPath(first);*/
-			else
-				newPath = txtAdvancedPath.Text;
+			String newPath = result.Count == 0 ? null : txtAdvancedPath.Text;
 
 			if(oldPath != newPath)
 			{
-				tsbnAdvancedSave.Enabled = first != null;
+				tsbnAdvancedSave.Enabled = result.Count > 0;
 				txtAdvancedPath.Tag = newPath;
-				this.SetAdvancedPath(first, count);
+				this.SetAdvancedPath(result.FirstOrDefault(), result.Count);
 			}
 		}
 
@@ -258,10 +238,10 @@ namespace Plugin.Browser
 
 		private void bnNavigate_Click(Object sender, EventArgs e)
 		{
-			if(!String.IsNullOrEmpty(this.NavigateUrl))
+			if(webView != null && webView.CoreWebView2 != null && !String.IsNullOrEmpty(this.NavigateUrl))
 			{
 				this._cancelNavigation = false;
-				browser.Navigate(this.NavigateUrl);
+				webView.CoreWebView2.Navigate(this.NavigateUrl);
 			}
 		}
 
@@ -282,7 +262,7 @@ namespace Plugin.Browser
 		private void txtNavigate_TextChanged(Object sender, EventArgs e)
 			=> bnNavigate.Enabled = !String.IsNullOrEmpty(txtNavigate.Text);
 
-		private void browser_Navigating(Object sender, WebBrowserNavigatingEventArgs e)
+		private void WebView_NavigationStarting(Object sender, CoreWebView2NavigationStartingEventArgs e)
 		{
 			if(this._cancelNavigation)
 			{
@@ -295,91 +275,90 @@ namespace Plugin.Browser
 			}
 		}
 
-		private void browser_DocumentCompleted(Object sender, WebBrowserDocumentCompletedEventArgs e)
+		private async void WebView_NavigationCompleted(Object sender, CoreWebView2NavigationCompletedEventArgs e)
 		{
 			base.Cursor = Cursors.Arrow;
-			this.NavigateUrl = browser.Document.Url.ToString();
+			this.NavigateUrl = webView.CoreWebView2.Source;
 			splitAdvancedEdit.Panel2Collapsed = true;
 
-			String title = browser.Document.Title;
+			String title = webView.CoreWebView2.DocumentTitle;
 			if(title.Length > 23)
 				title = title.Substring(0, 10) + "..." + title.Substring(title.Length - 10);
 
 			this.Window.Caption = String.Format(CultureInfo.CurrentCulture, "{0} - {1}", "Browser", title);
 			this.Plugin.Trace.TraceEvent(TraceEventType.Stop, 1);
 
-			//if(!this._eventsAttached)
-			//{
-				browser.Document.Body.MouseMove += new HtmlElementEventHandler(this.Body_MouseMove);
-				browser.Document.Body.MouseDown += new HtmlElementEventHandler(this.Body_MouseDown);
-				//this._eventsAttached = true;
-			//}
+			await WebView2Utils.InjectInterceptionScript(webView);
 
 			foreach(RadioButton ctrl in flowNodes.Controls)
 				if(ctrl.Tag != null)
 				{
-					XPathHtml xpath = new XPathHtml(browser.Document.Body, (String)ctrl.Tag);
-					foreach(HtmlElement element in xpath)
-						Utils.HilightElement(element, ctrl.ForeColor);
+					await WebView2Utils.HighlightElementByXPath(webView, (String)ctrl.Tag, ctrl.ForeColor);
 				}
 		}
 
-		private void browser_CanGoForwardChanged(Object sender, EventArgs e)
-			=> bnFfwd.Enabled = browser.CanGoBack;
-
-		private void browser_CanGoBackChanged(Object sender, EventArgs e)
-			=> bnBack.Enabled = browser.CanGoForward;
-
-		void Body_MouseDown(Object sender, HtmlElementEventArgs e)
+		private void WebView_CoreWebView2InitializationCompleted(Object sender, CoreWebView2InitializationCompletedEventArgs e)
 		{
-			switch(e.MouseButtonsPressed)
+			if(webView.CoreWebView2 != null)
 			{
-			case MouseButtons.Left:
-				if(e.CtrlKeyPressed && !e.ShiftKeyPressed && !e.AltKeyPressed)
-				{
-					this._cancelNavigation = true;
-					e.BubbleEvent = false;
-					HtmlElement element = browser.Document.GetElementFromPoint(e.ClientMousePosition);
-					if(element != null)
-						this.SetButtonPath(Utils.GetElementPath(element));
-				}
-				break;
-			case MouseButtons.Right:
-				if(e.CtrlKeyPressed && !e.ShiftKeyPressed && !e.AltKeyPressed)
-				{
-					this._cancelNavigation = true;
-					browser.IsWebBrowserContextMenuEnabled = false;
-					e.BubbleEvent = false;
+				webView.CoreWebView2.HistoryChanged += CoreWebView2_HistoryChanged;
+			}
+		}
 
-					HtmlElement element=browser.Document.GetElementFromPoint(e.ClientMousePosition);
-					if(element != null)
-					{
-						String path = Utils.GetElementPath(element);
-						cmsAdvancedTemplate.Tag = element;
-						cmsAdvancedTemplate.Show(browser, e.ClientMousePosition);
-					}
+		private void CoreWebView2_HistoryChanged(Object sender, Object e)
+		{
+			bnBack.Enabled = webView.CanGoBack;
+			bnFfwd.Enabled = webView.CanGoForward;
+		}
+
+		private void WebView_WebMessageReceived(Object sender, CoreWebView2WebMessageReceivedEventArgs e)
+		{
+			var message = e.TryGetWebMessageAsString();
+			if(message.StartsWith("MouseDown:"))
+			{
+				var parts = message.Split(new[] { ':' }, 3);
+				var button = parts[1];
+				var path = parts[2];
+				Body_MouseDown(button, path);
+			} else if(message.StartsWith("MouseMove:"))
+			{
+				var path = message.Substring("MouseMove:".Length);
+				Body_MouseMove(path);
+			}
+		}
+
+		void Body_MouseDown(String button, String elementXPath)
+		{
+			switch(button)
+			{
+			case "Left":
+				this._cancelNavigation = true;
+				if(!String.IsNullOrEmpty(elementXPath))
+					this.SetButtonPath(elementXPath);
+				break;
+			case "Right":
+				this._cancelNavigation = true;
+				webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+
+				if(!String.IsNullOrEmpty(elementXPath))
+				{
+					_currentRightClickedElementPath = elementXPath;
+					cmsAdvancedTemplate.Show(webView, PointToClient(Cursor.Position));
 				}
 				break;
 			}
 		}
 
-		void Body_MouseMove(Object sender, HtmlElementEventArgs e)
+		void Body_MouseMove(String elementXPath)
 		{
-			HtmlElement element = browser.Document.GetElementFromPoint(e.ClientMousePosition);
-			if(element == null)
-				tsslNodePath.Text = String.Empty;
-			else
-			{
-				String path = Utils.GetElementPath(element);
-				tsslNodePath.Text = path;
-			}
+			tsslNodePath.Text = elementXPath ?? String.Empty;
 		}
 
 		private void bnBack_Click(Object sender, EventArgs e)
-			=> browser.GoBack();
+			=> webView.GoBack();
 
 		private void bnFfwd_Click(Object sender, EventArgs e)
-			=> browser.GoForward();
+			=> webView.GoForward();
 
 		private void tsAdvanced_Resize(Object sender, EventArgs e)
 			=> txtAdvancedPath.Width = tsAdvanced.Width - (tsbnAdvancedSave.Width + 5);
