@@ -95,7 +95,7 @@
 			// txtNavigate
 			// 
 			this.txtNavigate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this.txtNavigate.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
 			this.txtNavigate.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.AllUrl;
 			this.txtNavigate.Location = new System.Drawing.Point(130, 6);
