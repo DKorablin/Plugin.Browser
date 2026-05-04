@@ -29,7 +29,7 @@ namespace Plugin.Browser
 
 		public DocumentBrowserSettings Settings => this._settings ?? (this._settings = new DocumentBrowserSettings());
 
-		protected PluginWindows Plugin => (PluginWindows)this.Window.Plugin;
+		protected PluginWindows Plugin => (PluginWindows)this.Window.Plugin.Instance;
 		private IWindow Window => (IWindow)base.Parent;
 
 		public DocumentBrowser()

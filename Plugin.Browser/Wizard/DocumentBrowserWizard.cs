@@ -8,6 +8,7 @@ using Plugin.Browser.Properties;
 using SAL.Flatbed;
 using SAL.Windows;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Plugin.Browser
 {
@@ -39,7 +40,7 @@ namespace Plugin.Browser
 		Object IPluginSettings.Settings => this.Settings;
 		public DocumentBrowserWizardSettings Settings => this._settings ?? (this._settings = new DocumentBrowserWizardSettings());
 
-		protected PluginWindows Plugin => (PluginWindows)this.Window.Plugin;
+		protected PluginWindows Plugin => (PluginWindows)this.Window.Plugin.Instance;
 		protected IWindow Window => (IWindow)base.Parent;
 
 		/// <summary>Plugin that triggers the event</summary>
@@ -120,7 +121,7 @@ namespace Plugin.Browser
 		private void Window_Closed(Object sender, EventArgs e)
 			=> this.Settings.NavigateUrl = this.NavigateUrl;
 
-		private async void SetButtonPath(String path)
+		private async Task SetButtonPath(String path)
 		{
 			foreach(RadioButton ctrl in flowNodes.Controls)
 				if(ctrl.Checked)
@@ -140,7 +141,7 @@ namespace Plugin.Browser
 		/// <summary>Set a tooltip for an expanded control</summary>
 		/// <param name="elementPath">The first element found in the collection</param>
 		/// <param name="totalCount">The total number of elements found that match the search criteria</param>
-		private async void SetAdvancedPath(String elementPath, Int32 totalCount)
+		private async Task SetAdvancedPath(String elementPath, Int32 totalCount)
 		{
 			lvAdvancedNodes.Items.Clear();
 			txtAdvancedPath.AutoCompleteCustomSource.Clear();
@@ -172,7 +173,7 @@ namespace Plugin.Browser
 		{
 			var evt = this.SaveNodesEvent;
 			if(evt == null)
-				this.Plugin.Trace.TraceEvent(TraceEventType.Warning, 10, String.Format("SaveEvent not attached from pluginId: {0}", this.Settings.CallerPluginId));
+				this.Plugin.Trace.TraceEvent(TraceEventType.Warning, 10, "SaveEvent not attached from pluginId: {0}", this.Settings.CallerPluginId);
 			else
 			{
 				KeyValuePair<String, String>[] nodes = new KeyValuePair<String, String>[flowNodes.Controls.Count];
@@ -285,24 +286,20 @@ namespace Plugin.Browser
 			if(title.Length > 23)
 				title = title.Substring(0, 10) + "..." + title.Substring(title.Length - 10);
 
-			this.Window.Caption = String.Format(CultureInfo.CurrentCulture, "{0} - {1}", "Browser", title);
-			this.Plugin.Trace.TraceEvent(TraceEventType.Stop, 1);
+			this.Window.Caption = $"Browser - {title}";
+			this.Plugin.Trace.TraceEvent(TraceEventType.Stop, 1, null);
 
 			await WebView2Utils.InjectInterceptionScript(webView);
 
 			foreach(RadioButton ctrl in flowNodes.Controls)
 				if(ctrl.Tag != null)
-				{
 					await WebView2Utils.HighlightElementByXPath(webView, (String)ctrl.Tag, ctrl.ForeColor);
-				}
 		}
 
 		private void WebView_CoreWebView2InitializationCompleted(Object sender, CoreWebView2InitializationCompletedEventArgs e)
 		{
 			if(webView.CoreWebView2 != null)
-			{
-				webView.CoreWebView2.HistoryChanged += CoreWebView2_HistoryChanged;
-			}
+				webView.CoreWebView2.HistoryChanged += this.CoreWebView2_HistoryChanged;
 		}
 
 		private void CoreWebView2_HistoryChanged(Object sender, Object e)
@@ -319,15 +316,15 @@ namespace Plugin.Browser
 				var parts = message.Split(new[] { ':' }, 3);
 				var button = parts[1];
 				var path = parts[2];
-				Body_MouseDown(button, path);
+				this.Body_MouseDown(button, path);
 			} else if(message.StartsWith("MouseMove:"))
 			{
 				var path = message.Substring("MouseMove:".Length);
-				Body_MouseMove(path);
+				this.Body_MouseMove(path);
 			}
 		}
 
-		void Body_MouseDown(String button, String elementXPath)
+		private void Body_MouseDown(String button, String elementXPath)
 		{
 			switch(button)
 			{
@@ -349,10 +346,8 @@ namespace Plugin.Browser
 			}
 		}
 
-		void Body_MouseMove(String elementXPath)
-		{
-			tsslNodePath.Text = elementXPath ?? String.Empty;
-		}
+		private void Body_MouseMove(String elementXPath)
+			=> tsslNodePath.Text = elementXPath ?? String.Empty;
 
 		private void bnBack_Click(Object sender, EventArgs e)
 			=> webView.GoBack();
