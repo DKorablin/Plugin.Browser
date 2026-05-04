@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows.Forms;
+using Microsoft.Web.WebView2.Core;
 using Plugin.Browser.Properties;
 using SAL.Flatbed;
 using SAL.Windows;
-using System.Diagnostics;
 
 namespace Plugin.Browser
 {
@@ -34,7 +35,7 @@ namespace Plugin.Browser
 		public DocumentBrowser()
 			=> this.InitializeComponent();
 
-		protected override void OnCreateControl()
+		protected override async void OnCreateControl()
 		{
 			this.Window.Caption = "Browser";
 			this.Window.SetTabPicture(Resources.iconBrowser);
@@ -42,6 +43,7 @@ namespace Plugin.Browser
 			base.OnCreateControl();
 
 			this.NavigateUrl = this.Settings.NavigateUrl;
+			await webView.EnsureCoreWebView2Async(null);
 			this.bnNavigate_Click(this, EventArgs.Empty);
 		}
 
@@ -53,8 +55,8 @@ namespace Plugin.Browser
 
 		private void bnNavigate_Click(Object sender, EventArgs e)
 		{
-			if(!String.IsNullOrEmpty(this.NavigateUrl))
-				browser.Navigate(this.NavigateUrl);
+			if (webView != null && webView.CoreWebView2 != null && !String.IsNullOrEmpty(this.NavigateUrl))
+				webView.CoreWebView2.Navigate(this.NavigateUrl);
 		}
 
 		private void txtNavigate_KeyDown(Object sender, KeyEventArgs e)
@@ -71,31 +73,39 @@ namespace Plugin.Browser
 		private void txtNavigate_TextChanged(Object sender, EventArgs e)
 			=> bnNavigate.Enabled = !String.IsNullOrEmpty(txtNavigate.Text);
 
-		private void browser_Navigating(Object sender, WebBrowserNavigatingEventArgs e)
+		private void WebView_NavigationStarting(Object sender, CoreWebView2NavigationStartingEventArgs e)
 		{
 			base.Cursor = Cursors.WaitCursor;
 			this.Plugin.Trace.TraceEvent(TraceEventType.Start, 1, "Loading...");
 		}
 
-		private void browser_DocumentCompleted(Object sender, WebBrowserDocumentCompletedEventArgs e)
+		private void WebView_NavigationCompleted(Object sender, CoreWebView2NavigationCompletedEventArgs e)
 		{
 			base.Cursor = Cursors.Arrow;
-			this.NavigateUrl = browser.Document.Url.ToString();
+			this.NavigateUrl = webView.CoreWebView2.Source;
 
-			this.Window.Caption = browser.Document.Title;
+			this.Window.Caption = webView.CoreWebView2.DocumentTitle;
 			this.Plugin.Trace.TraceEvent(TraceEventType.Stop, 1, null);
 		}
 
-		private void browser_CanGoForwardChanged(Object sender, EventArgs e)
-			=> bnFfwd.Enabled = browser.CanGoBack;
+		private void WebView_CoreWebView2InitializationCompleted(Object sender, CoreWebView2InitializationCompletedEventArgs e)
+		{
+			if (webView.CoreWebView2 != null)
+			{
+				webView.CoreWebView2.HistoryChanged += CoreWebView2_HistoryChanged;
+			}
+		}
 
-		private void browser_CanGoBackChanged(Object sender, EventArgs e)
-			=> bnBack.Enabled = browser.CanGoForward;
+		private void CoreWebView2_HistoryChanged(Object sender, Object e)
+		{
+			bnBack.Enabled = webView.CanGoBack;
+			bnFfwd.Enabled = webView.CanGoForward;
+		}
 
 		private void bnBack_Click(Object sender, EventArgs e)
-			=> browser.GoBack();
+			=> webView.GoBack();
 
 		private void bnFfwd_Click(Object sender, EventArgs e)
-			=> browser.GoForward();
+			=> webView.GoForward();
 	}
 }

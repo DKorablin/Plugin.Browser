@@ -41,7 +41,7 @@
 			this.bnNavigate = new System.Windows.Forms.Button();
 			this.txtNavigate = new System.Windows.Forms.TextBox();
 			this.tsslNodePath = new System.Windows.Forms.ToolStripStatusLabel();
-			this.browser = new System.Windows.Forms.WebBrowser();
+			this.webView = new Microsoft.Web.WebView2.WinForms.WebView2();
 			this.splitBrowser = new System.Windows.Forms.SplitContainer();
 			this.splitAdvancedEdit = new System.Windows.Forms.SplitContainer();
 			this.flowNodes = new System.Windows.Forms.FlowLayoutPanel();
@@ -62,9 +62,12 @@
 			colAdvancedValue = new System.Windows.Forms.ColumnHeader();
 			pnlHead.SuspendLayout();
 			ssNodePath.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.webView)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.splitBrowser)).BeginInit();
 			this.splitBrowser.Panel1.SuspendLayout();
 			this.splitBrowser.Panel2.SuspendLayout();
 			this.splitBrowser.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.splitAdvancedEdit)).BeginInit();
 			this.splitAdvancedEdit.Panel1.SuspendLayout();
 			this.splitAdvancedEdit.Panel2.SuspendLayout();
 			this.splitAdvancedEdit.SuspendLayout();
@@ -172,19 +175,21 @@
 			// 
 			colAdvancedValue.Text = "Value";
 			// 
-			// browser
+			// webView
 			// 
-			this.browser.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.browser.Location = new System.Drawing.Point(0, 0);
-			this.browser.MinimumSize = new System.Drawing.Size(20, 20);
-			this.browser.Name = "browser";
-			this.browser.ScriptErrorsSuppressed = true;
-			this.browser.Size = new System.Drawing.Size(526, 154);
-			this.browser.TabIndex = 1;
-			this.browser.CanGoForwardChanged += new System.EventHandler(this.browser_CanGoForwardChanged);
-			this.browser.CanGoBackChanged += new System.EventHandler(this.browser_CanGoBackChanged);
-			this.browser.Navigating += new System.Windows.Forms.WebBrowserNavigatingEventHandler(this.browser_Navigating);
-			this.browser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.browser_DocumentCompleted);
+			this.webView.AllowExternalDrop = true;
+			this.webView.CreationProperties = null;
+			this.webView.DefaultBackgroundColor = System.Drawing.Color.White;
+			this.webView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.webView.Location = new System.Drawing.Point(0, 0);
+			this.webView.Name = "webView";
+			this.webView.Size = new System.Drawing.Size(526, 154);
+			this.webView.TabIndex = 1;
+			this.webView.ZoomFactor = 1D;
+			this.webView.CoreWebView2InitializationCompleted += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs>(this.WebView_CoreWebView2InitializationCompleted);
+			this.webView.WebMessageReceived += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs>(this.WebView_WebMessageReceived);
+			this.webView.NavigationStarting += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs>(this.WebView_NavigationStarting);
+			this.webView.NavigationCompleted += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs>(this.WebView_NavigationCompleted);
 			// 
 			// splitBrowser
 			// 
@@ -196,7 +201,7 @@
 			// 
 			// splitBrowser.Panel1
 			// 
-			this.splitBrowser.Panel1.Controls.Add(this.browser);
+			this.splitBrowser.Panel1.Controls.Add(this.webView);
 			// 
 			// splitBrowser.Panel2
 			// 
@@ -338,13 +343,16 @@
 			pnlHead.PerformLayout();
 			ssNodePath.ResumeLayout(false);
 			ssNodePath.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.webView)).EndInit();
 			this.splitBrowser.Panel1.ResumeLayout(false);
 			this.splitBrowser.Panel2.ResumeLayout(false);
 			this.splitBrowser.Panel2.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.splitBrowser)).EndInit();
 			this.splitBrowser.ResumeLayout(false);
 			this.splitAdvancedEdit.Panel1.ResumeLayout(false);
 			this.splitAdvancedEdit.Panel2.ResumeLayout(false);
 			this.splitAdvancedEdit.Panel2.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.splitAdvancedEdit)).EndInit();
 			this.splitAdvancedEdit.ResumeLayout(false);
 			this.tsAdvanced.ResumeLayout(false);
 			this.tsAdvanced.PerformLayout();
@@ -361,7 +369,7 @@
 		private System.Windows.Forms.Button bnBack;
 		private System.Windows.Forms.Button bnNavigate;
 		private System.Windows.Forms.TextBox txtNavigate;
-		private System.Windows.Forms.WebBrowser browser;
+		private Microsoft.Web.WebView2.WinForms.WebView2 webView;
 		private System.Windows.Forms.SplitContainer splitBrowser;
 		private System.Windows.Forms.FlowLayoutPanel flowNodes;
 		private System.Windows.Forms.ToolStrip tsNodes;
