@@ -37,7 +37,7 @@
 			this.bnNavigate = new System.Windows.Forms.Button();
 			this.txtNavigate = new System.Windows.Forms.TextBox();
 			this.ilImages = new System.Windows.Forms.ImageList(this.components);
-			this.webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+			this.webView = new FocusAwareWebView2();
 			this.ttNodes = new System.Windows.Forms.ToolTip(this.components);
 			pnlHead = new System.Windows.Forms.Panel();
 			label1 = new System.Windows.Forms.Label();
@@ -155,7 +155,7 @@
 		#endregion
 
 		private System.Windows.Forms.TextBox txtNavigate;
-		private Microsoft.Web.WebView2.WinForms.WebView2 webView;
+		private FocusAwareWebView2 webView;
 		private System.Windows.Forms.Button bnNavigate;
 		private System.Windows.Forms.ImageList ilImages;
 		private System.Windows.Forms.Button bnFfwd;

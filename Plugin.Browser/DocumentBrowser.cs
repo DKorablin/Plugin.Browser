@@ -42,6 +42,7 @@ namespace Plugin.Browser
 			this.Window.Shown += new EventHandler(this.Parent_Shown);
 			base.OnCreateControl();
 
+			webView.FocusTarget = this;
 			this.NavigateUrl = this.Settings.NavigateUrl;
 			await webView.EnsureCoreWebView2Async(null);
 			this.bnNavigate_Click(this, EventArgs.Empty);
@@ -88,12 +89,20 @@ namespace Plugin.Browser
 			this.Plugin.Trace.TraceEvent(TraceEventType.Stop, 1, null);
 		}
 
-		private void WebView_CoreWebView2InitializationCompleted(Object sender, CoreWebView2InitializationCompletedEventArgs e)
+		private async void WebView_CoreWebView2InitializationCompleted(Object sender, CoreWebView2InitializationCompletedEventArgs e)
 		{
-			if (webView.CoreWebView2 != null)
-			{
-				webView.CoreWebView2.HistoryChanged += CoreWebView2_HistoryChanged;
-			}
+			if(webView.CoreWebView2 == null)
+				return;
+			webView.CoreWebView2.HistoryChanged += CoreWebView2_HistoryChanged;
+			webView.CoreWebView2.WebMessageReceived += this.CoreWebView2_WebMessageReceived;
+			await webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(
+				"document.addEventListener('mousedown', () => window.chrome.webview.postMessage('focus'), true);");
+		}
+
+		private void CoreWebView2_WebMessageReceived(Object sender, CoreWebView2WebMessageReceivedEventArgs e)
+		{
+			if(e.WebMessageAsJson == "\"focus\"")
+				webView.NotifyFocus();
 		}
 
 		private void CoreWebView2_HistoryChanged(Object sender, Object e)
