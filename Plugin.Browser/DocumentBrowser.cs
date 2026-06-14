@@ -96,7 +96,7 @@ namespace Plugin.Browser
 			webView.CoreWebView2.HistoryChanged += CoreWebView2_HistoryChanged;
 			webView.CoreWebView2.WebMessageReceived += this.CoreWebView2_WebMessageReceived;
 			await webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(
-				"document.addEventListener('mousedown', () => window.chrome.webview.postMessage('focus'), true);");
+				"document.addEventListener('mousedown', () => window.chrome.webview.postMessage('focus'));");
 		}
 
 		private void CoreWebView2_WebMessageReceived(Object sender, CoreWebView2WebMessageReceivedEventArgs e)

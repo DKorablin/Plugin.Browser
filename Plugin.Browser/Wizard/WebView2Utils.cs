@@ -27,7 +27,7 @@ document.addEventListener('mousedown', e => {
 		let button = e.button === 0 ? 'Left' : e.button === 2 ? 'Right' : 'Other';
 		window.chrome.webview.postMessage('MouseDown:' + button + ':' + path);
 	}
-}, true);
+});
 
 function getElementXPath(element) {
 	if (element.id !== '')
